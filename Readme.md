@@ -1,4 +1,4 @@
-# Wireless Switch
+# Open Wireless Switch (OWS)
 
 ## What does this do?
 
