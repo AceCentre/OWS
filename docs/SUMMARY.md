@@ -7,3 +7,4 @@
 * [Supported Hardware](supported-hardware.md)
 * [Roadmap](roadmap.md)
 * [Credits](credits.md)
+* [Contributing](contributing.md)
