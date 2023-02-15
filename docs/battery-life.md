@@ -11,3 +11,5 @@ In transmitting - it's not so great - 200 presses. **We need to work on this!**
 But in general, cheap batteries will have less capacity.
 
 Consumption can also vary on different boards. My measurements were made with the nrf52840 dongle.
+
+### How does this compare with HID?
