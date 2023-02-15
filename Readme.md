@@ -4,6 +4,8 @@
 
 You have a nrf52840 board that sends and a nrf52840 board that receives. We are demonstrating here how to do wireless switches with LOW POWER. 
 
+## Note: Docs and more info at https://docs.acecentre.org.uk/products/v/open-wireless-switch-ows/
+
 ## How?
 
 Most wireless switches either use Radio (e.g. LoRa) or BLE HID to operate. The problem with BLE HID is that its power hungry and for switch users it cant really sleep. So this technique has a advertisement (advertisement) beacon which starts advertisement on a switch press. Full detail below.. 
