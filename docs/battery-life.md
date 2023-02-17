@@ -6,7 +6,9 @@ A Good coin cell battery can have around 200 mAh. \
 \
 So sleep battery life. 200mAh/20uA = 10000 hrs in deep sleep mode. 10000hrs > 416 days > a bit more than a year.
 
-In transmitting - it's not so great - 200 presses. **We need to work on this!**
+In transmitting:\
+\- Single press activates advertising and if there is no next activity for half second then advertising turns off. \
+\- So we have consumption 1mA during half second for single press. So about Coin cell has 200 mAh -> 200 \* 3600 mAsec or **7200 single presses.**&#x20;
 
 But in general, cheap batteries will have less capacity.
 
