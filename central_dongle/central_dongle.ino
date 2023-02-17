@@ -6,13 +6,12 @@ using namespace Adafruit_LittleFS_Namespace;
 File file(InternalFS);
 #define MAC_FILENAME    "/button_mac.txt"
 
-#define PAIR_LED 1
-uint8_t n_pair_blinks = 3;
-uint32_t blink_interval = 500;
+#define PAIR_LED 3                // led for indicating pairing
+uint8_t n_pair_blinks = 3;        // number of blinks during pairing  
+uint32_t blink_interval = 500;    // interval of blinks during pairing 
 
-bool indicate_pair = false;
-
-uint8_t active_button_hid = HID_KEY_SPACE; // key that will be sent to USB
+uint8_t n_buttons = 4;  // number of buttons to receive
+uint8_t buttons_hid_actions[] = {HID_KEY_1, HID_KEY_2, HID_KEY_3, HID_KEY_4}; // hid action for each button that will be sent via USB
 
 uint8_t const desc_hid_report[] =
 {
@@ -21,24 +20,24 @@ uint8_t const desc_hid_report[] =
 
 Adafruit_USBD_HID usb_hid(desc_hid_report, sizeof(desc_hid_report), HID_ITF_PROTOCOL_KEYBOARD, 2, false);
 
-
 uint8_t keycode[6] = { 0 };
 
 bool keyboard_state = false;
 
-uint8_t pair_package[] = {0x08, 0xFF, 0xFF, 0xFF, 0x9C, 0x7C, 0, 0, 0};
-uint8_t button_mac_arr[6] = { 0 };
+uint8_t pair_package[] = {0x15, 0xFF, 0xFF, 0xFF, 0x9C, 0x7C, 0, 0, 0};
 
-uint8_t button_state = 0;
+bool indicate_pair = false;
+
+uint8_t button_mac_arr[6] = { 0 };
 
 uint32_t last_update = 0;
 uint32_t last_update_diff = 0;
 
-uint8_t received_package;
+uint8_t received_package[4];
 uint8_t package_i = 255;
 uint8_t package_size = 8;
 
-uint8_t replay_package = 0;
+uint8_t replay_package[4];
 uint8_t  replay_i = 255;
 uint32_t replay_interval = 30;
 
@@ -114,19 +113,24 @@ bool repairing_package(uint8_t* received_package) {
   return true;
 }
 
-void unpack_package(uint8_t received_package) {
+void unpack_package(uint8_t* received_package) {
   //Serial.printf("Unpacking package: %X\n", received_package);
   for(uint8_t i=0; i<package_size; i++) {
     //Serial.printf("%u; button: ", i);
-    while (!usb_hid.ready()) {}
-    if(received_package & 1) {
-      usb_hid.keyboardReport(0, 0, keycode);      
+    for(uint8_t j = 0; j < n_buttons; j++) {
+    if(received_package[j] & 1) {
+      keycode[j] = buttons_hid_actions[j];            
       //Serial.printf("pressed\n");
     } else {
-      usb_hid.keyboardRelease(0);
+      keycode[j] = 0;      
       //Serial.printf("released\n");      
     }
-    received_package = received_package >> 1;
+
+    received_package[j] = received_package[j] >> 1;
+    }
+    
+    while (!usb_hid.ready()) {}
+    usb_hid.keyboardReport(0, 0, keycode);
 
     delay(replay_interval);        
   }
@@ -160,10 +164,12 @@ void scan_callback(ble_gap_evt_adv_report_t* report)
     if(package_i != report->data.p_data[4]) {
       last_update_diff = millis() - last_update;
       last_update = millis();
-      Serial.printf("Since last update: %u; Received package: %X-%X\n", last_update_diff, report->data.p_data[4], report->data.p_data[5]);
+      Serial.printf("Since last update: %u; Received package: %X-%X-%X-%X-%X\n", last_update_diff, report->data.p_data[4], report->data.p_data[5], report->data.p_data[6], report->data.p_data[7], report->data.p_data[8], report->data.p_data[9]);
       
       package_i = report->data.p_data[4];
-      received_package = report->data.p_data[5];
+      for(uint8_t i = 0; i < n_buttons; i++) {
+        received_package[i] = report->data.p_data[i+5];
+      }
 
     }
   }
@@ -176,8 +182,6 @@ void scan_callback(ble_gap_evt_adv_report_t* report)
 void setup() 
 {
   pinMode(PAIR_LED, OUTPUT);
-  
-  keycode[0] = active_button_hid;
 
   Serial.begin(115200);  
   usb_hid.begin();
@@ -220,8 +224,14 @@ void loop()
   }
   if(replay_i != package_i) {    
     replay_i = package_i;
-    replay_package = received_package;
-    Serial.printf("replaying package %u: %u\n", replay_i, replay_package);
+    
+    Serial.printf("replaying package %u: ", replay_i);
+    for(uint8_t i=0;i<n_buttons;i++){
+      replay_package[i] = received_package[i];
+      Serial.printf("%X ", replay_package[i]);
+    }
+    Serial.println();
+
     unpack_package(replay_package);    
   }
 }

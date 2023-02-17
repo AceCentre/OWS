@@ -7,8 +7,10 @@ from bleak import BleakScanner
 
 from pynput.keyboard import Key, Controller
 
-active_key = Key.space
-keyboard_repeat = True
+n_buttons = 4                              # number of buttons to receive
+buttons_hid_actions = ["1", "2", "3", "4"] # hid action for each button that will be emulated
+keyboard_repeat = True                     # handle long presses
+
 MANUFACTURER_ID = 65535
 
 button_filepath = pathlib.Path(__file__).parent.resolve() / "button_mac"
@@ -17,14 +19,14 @@ target_mac = None
 
 prev_package_i = -1
 
-pairing_package = b'\x9c|\x00\x00\x00'
+pairing_package = b'\x9c|\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
 
 scan_stop_event = asyncio.Event()
 
 package_size = 8
 replay_interval = 0.03 # in seconds          
 replay_buffer = asyncio.Queue()
-keyboard_state = 0
+button_states = [0,0,0,0]
 
 keyboard = Controller()
 
@@ -50,35 +52,37 @@ async def replay():
 
     print("start replay function. Interval:", replay_interval)
     while True:
-        replay_i, replay_val, current = await replay_buffer.get()
-        print("replay pack: {} - {}; curr: {}".format(replay_i, bin(replay_val), current))
+        replay_i, replay_values, current = await replay_buffer.get()
+        print("replay pack: {} - {}; curr: {}".format(replay_i, replay_values, current))
         
         for i in range(package_size):
-            received_state = replay_val & 1
+            for j in range(n_buttons):
+                received_state = replay_values[j] & 1
 
-            if keyboard_repeat:
-                if received_state == 1:
-                    if keyboard_state == 0 or keyboard_state > 20:
-                        await asyncio.to_thread(keyboard.press, active_key)
+                if keyboard_repeat:
+                    if received_state == 1:
+                        if button_states[j] == 0 or button_states[j] > 20:
+                            await asyncio.to_thread(keyboard.press, buttons_hid_actions[j])
 
-                    keyboard_state += 1
+                        button_states[j] += 1
+                    else:
+                        button_states[j] = 0
                 else:
-                    keyboard_state = 0
-            else:
-                if keyboard_state == 0 and received_state == 1:
-                    await asyncio.to_thread(keyboard.press, active_key)
-                keyboard_state = received_state
-            
-            replay_val = replay_val >> 1        
+                    if button_states[j] == 0 and received_state == 1:
+                        await asyncio.to_thread(keyboard.press, buttons_hid_actions[j])
+                    button_states[j] = received_state
+                
+                replay_values[j] = replay_values[j] >> 1
             
             if current:
                 await asyncio.sleep(replay_interval)
 
 def receive_button_data(device, advertising_data):
     global replay_buffer, prev_package_i
-    if len(target_mac) == 0:
-        print("{:.3f} | MAC: {} | Adv: {}".format(time.time(), device.address, advertising_data))    
-    elif device.address == target_mac:
+
+    #print("{:.3f} | MAC: {} | Adv: {}".format(time.time(), device.address, advertising_data))
+
+    if device.address == target_mac:
         package_i = advertising_data.manufacturer_data[MANUFACTURER_ID][0]
 
         if prev_package_i != package_i:
@@ -100,8 +104,12 @@ def receive_button_data(device, advertising_data):
             while i >= 0:
                 if i == 0:
                     current = True
-                print("put package {}:{}; curr:{}".format((package_i-i), bin(adv_package[i]), current))    
-                replay_buffer.put_nowait(((package_i-i), adv_package[i], current))
+                replay_pack = []
+                for j in range(n_buttons):
+                    replay_pack.append(adv_package[i*4+j])
+                
+                print("put package {}:{}; curr:{}".format((package_i-i), replay_pack, current))    
+                replay_buffer.put_nowait(((package_i-i), replay_pack, current))
 
                 i-=1
             
@@ -110,7 +118,8 @@ def receive_button_data(device, advertising_data):
 def pair(device, advertising_data):
     dev_mac = device.address
     adv_package = advertising_data.manufacturer_data.get(MANUFACTURER_ID)
-    if adv_package != None and len(adv_package) == 5:
+    #print(adv_package)
+    if adv_package != None and len(adv_package) == 18:
         if pairing_package == adv_package:
             print("Got pairing package from: {}".format(dev_mac))
             save_mac(dev_mac)
