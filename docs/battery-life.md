@@ -15,3 +15,5 @@ But in general, cheap batteries will have less capacity.
 Consumption can also vary on different boards. My measurements were made with the nrf52840 dongle.
 
 ### How does this compare with HID?
+
+2532 uA (2.532 milliamperes) constant draw is seen on a HID connection with an nrf52840. So it consumes more than 2.5x more power.&#x20;
