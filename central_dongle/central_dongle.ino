@@ -6,7 +6,7 @@ using namespace Adafruit_LittleFS_Namespace;
 File file(InternalFS);
 #define MAC_FILENAME    "/button_mac.txt"
 
-#define PAIR_LED 3                // led for indicating pairing
+#define PAIR_LED LED_BLUE                // led for indicating pairing
 uint8_t n_pair_blinks = 3;        // number of blinks during pairing  
 uint32_t blink_interval = 500;    // interval of blinks during pairing 
 

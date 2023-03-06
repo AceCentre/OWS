@@ -2,11 +2,11 @@
 
 //#define DEBUG                          // disables deep sleep and enables waiting for serial port
 
-#define LED 10                         // status led
-#define PAIR_BUTTON 15                 // pairing button pin
+#define LED LED_BLUE                    // status led
+#define PAIR_BUTTON A0                 // pairing button pin
 
 uint8_t n_buttons = 4;                 // number of buttons to init and advertise
-uint8_t button_pins[] = {20,21,18,16}; // buttons pins
+uint8_t button_pins[] = {A1,A2,A3,A4}; // buttons pins
 bool pressed_button = 0;               // flag to check if there buttons pressed
 
 uint32_t inactivity_timeout = 500;     // stop advertising buttons data after this timeout
