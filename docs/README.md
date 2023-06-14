@@ -29,3 +29,15 @@ Some companies have developed lower power switches using Bluetooth, but this is 
 ### What does this do?
 
 As of right now, we have working firmware for a Bluetooth chipset and software to receive the switches without the hardware. This is currently in python. We are open to discussion about the protocol and code.&#x20;
+
+### What techniques have you considered?
+
+Let's consider the different ways we can wirelessly create a switch (let us know if we have missed something!)
+
+| Technique            | Pros                                 | Cons                                                                                                                                               |
+| -------------------- | ------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------- |
+| LoRa - Radio e.g 433 | Low low Low power                    | You would need a sender and receiving dongle.                                                                                                      |
+| IR                   | Low power                            | Unreliable, needs a dongle to receive and send                                                                                                     |
+| Chirp/Sound          | Low power ?                          | Now hard to do this as Spotify bought chrip. Could design your own thing.. but environmental noise? Unreliable? Fiddly on designing receiving code |
+| Bluetooth HID        | Ubiquotous, Receiving easy           | Power hungry. A lot of wasted bandwith                                                                                                             |
+| Bluetooth Beacon     | Low Power, Recieving straightforward | Need a dongle on some devices where a background task can't run (e.g. iOS)                                                                         |
