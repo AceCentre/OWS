@@ -2,7 +2,7 @@
 
 ## What does this do?
 
-You have a nrf52840 board that sends and a nrf52840 board that receives. We are demonstrating here how to do wireless switches with LOW POWER. 
+You have a nrf52840 board that sends and a nrf52840 board that receives. We are demonstrating here how to do wireless switches with LOW POWER. nb. you can recieve kn software alone too. 
 
 ## Note: Docs and more info at https://docs.acecentre.org.uk/products/v/open-wireless-switch-ows/
 
