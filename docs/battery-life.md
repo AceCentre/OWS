@@ -10,9 +10,14 @@ In transmitting:\
 \- Single press activates advertising, and if there is no next activity for half a second then advertising turns off. \
 \- So we have a consumption of 1mA during half second for a single press. So about Coin cell has 200 mAh -> 200 \* 3600 mAsec or **7200 single presses.**&#x20;
 
+How long will then a average coin cell battery last in sleep mode only?
+
+* 500 mAh / 0.02 mA = 25,000 hours ≈ 1,042 days or about 2.85 years How long will the battery last in active mode only?
+* 500 mAh / 1 mA = 500 hours ≈ 20.83 days”
+
 But in general, cheap batteries will have less capacity.
 
-Consumption can also vary on different boards. My measurements were made with the nrf52840 dongle.
+**If we have a 1000 mAh battery/ 0.02 mA = 50,000 hours ≈ 2,083 days or about 5.7 years sleep mode. Active mode only: 1000 mAh / 1 mA = 1000 hours ≈ 41.67 days**
 
 ### How does this compare with HID?
 
