@@ -19,6 +19,12 @@ But in general, cheap batteries will have less capacity.
 
 **If we have a 1000 mAh battery/ 0.02 mA = 50,000 hours ≈ 2,083 days or about 5.7 years sleep mode. Active mode only: 1000 mAh / 1 mA = 1000 hours ≈ 41.67 days**
 
+**In our real world tests this stands up.**\
+**We had our code running actively (a switch press per second) We calculated**\
+\
+**3392945** switch presses\
+in a total of **809hours** approx 33 days. It was still going and we decided to read its battery voltage where we read 3.7. It starts at 4.2.
+
 ### How does this compare with HID?
 
 2532 uA (2.532 milliamperes) constant draw is seen on an HID connection with an nrf52840. So it consumes more than 2.5x more power.&#x20;
