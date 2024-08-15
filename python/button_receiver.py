@@ -134,17 +134,29 @@ async def scan(callback_fun):
         await scan_stop_event.wait()
 
 
-async def main():    
+async def main():
     n_args = len(sys.argv)
+    
     if n_args == 1:
+        # No arguments provided, show help message
+        print("\nUsage: python script_name.py [pair]\n")
+        print("Options:")
+        print("  pair          Initiate the pairing process with the switch device.")
+        print("\nIf no arguments are provided:")
+        print("  The script will attempt to load the previously paired device and start receiving data.")
+        print("\nExample:")
+        print("  python script_name.py pair   # Start pairing")
+        print("  python script_name.py         # Start receiving from previously paired device\n")
+        
         if load_mac():
-            print("start receiving from: {}".format(target_mac))
+            print(f"Start receiving from: {target_mac}")
             await asyncio.gather(scan(receive_button_data), replay())
         else:
-            print("No button was paired. Run pairing firstly.")
-    elif n_args == 2 and sys.argv[1] == "pair":
-        print("Start pairing")        
+            print("No button was paired. Run pairing first.")
+    
+    elif n_args == 2 and sys.argv[1].lower() == "pair":
+        print("Start pairing")
         await scan(pair)
-        print("pairing end")
-
+        print("Pairing completed")
+        
 asyncio.run(main())
