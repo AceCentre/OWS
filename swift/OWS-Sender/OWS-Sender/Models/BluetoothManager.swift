@@ -79,9 +79,17 @@ class BluetoothManager: NSObject, ObservableObject, CBCentralManagerDelegate, CB
         if manufacturerData.starts(with: pairingPackage) {
             statusMessage = "Got pairing package from: \(peripheral.identifier.uuidString)"
             saveMacAddress(peripheral.identifier.uuidString)
+
+            // Initiate connection to the peripheral
+            centralManager?.connect(peripheral, options: nil)
+            
+            statusMessage = "Connecting to device: \(peripheral.identifier.uuidString)"
+            
+            // Stop the scan after initiating the connection
             centralManager?.stopScan()
+            
         } else {
-            statusMessage = "Other device: \(peripheral.identifier.uuidString)"
+            statusMessage = "Other device found: \(peripheral.identifier.uuidString)"
         }
     }
     
