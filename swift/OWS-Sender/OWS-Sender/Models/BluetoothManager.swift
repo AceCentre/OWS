@@ -9,9 +9,11 @@ import Foundation
 import CoreBluetooth
 import Combine
 
-class BluetoothManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeripheralDelegate {
-    private var centralManager: CBCentralManager?
-    private var targetPeripheral: CBPeripheral?
+class BluetoothManager: NSObject, ObservableObject, CBPeripheralManagerDelegate {
+    
+    
+    
+    private var peripheralManager : CBPeripheralManager!
     
     private let manufacturerId: UInt16 = 65535
     private let pairingPackage: [UInt8] = [0x9c, 0x7c, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00]
@@ -29,72 +31,87 @@ class BluetoothManager: NSObject, ObservableObject, CBCentralManagerDelegate, CB
 
     override init() {
         super.init()
-        centralManager = CBCentralManager(delegate: self, queue: nil)
+        
     }
     
-    func startScanning() {
-        if let mac = loadMacAddress() {
-            targetMac = mac
-            statusMessage = "Start receiving from: \(mac)"
-            centralManager?.scanForPeripherals(withServices: nil, options: [CBCentralManagerScanOptionAllowDuplicatesKey: true])
-        } else {
-            statusMessage = "No button was paired. Run pairing firstly."
-            centralManager?.scanForPeripherals(withServices: nil, options: [CBCentralManagerScanOptionAllowDuplicatesKey: true])
-        }
+    func startbroadcasting() {
+        
+        self.peripheralManager = CBPeripheralManager(delegate: self, queue: nil) // Use the main thread
     }
     
-    // MARK: - CBCentralManagerDelegate Methods
-
-    func centralManagerDidUpdateState(_ central: CBCentralManager) {
-        switch central.state {
-        case .poweredOn:
-            statusMessage = "Bluetooth is powered on"
-            startScanning()
+    func peripheralManagerDidUpdateState(_ peripheral: CBPeripheralManager) { // we want to if the has granted permiision or revijed irt
+        
+        
+        switch peripheral.state {
+        case .unknown:
+            print("Bluetooth Device is UNKNOWN")
+            statusMessage = "UNKNOWN"
+        case .unsupported:
+            print("Bluetooth Device is UNSUPPORTED")
+            statusMessage = "UNSUPPORTED"
+        case .unauthorized:
+            print("Bluetooth Device is UNAUTHORIZED")
+            statusMessage = "UNAUTHORIZED"
+        case .resetting:
+            print("Bluetooth Device is RESETTING")
+            statusMessage = "RESETTING"
         case .poweredOff:
-            statusMessage = "Bluetooth is turned off"
-        default:
-            statusMessage = "Bluetooth is not available"
+            print("Bluetooth Device is POWERED OFF")
+            statusMessage = "POWERED OFF"
+        case .poweredOn:
+            print("Bluetooth Device is POWERED ON")
+            statusMessage = "POWERED ON"
+            createServices()
+        @unknown default:
+            print("Unknown State")
+            statusMessage = "Unknown State"
         }
     }
+
     
-    func centralManager(_ central: CBCentralManager, didDiscover peripheral: CBPeripheral, advertisementData: [String : Any], rssi RSSI: NSNumber) {
-        guard let manufacturerData = advertisementData[CBAdvertisementDataManufacturerDataKey] as? Data else { return }
+    private var service: CBUUID!
+    private let value = "EF14F506-59C9-4A4F-BA5D-7B5F64172B44"
+    func createServices() {        let valueData = value.data(using: .utf8)
+         // create the main service
+         // 1. Create instance of CBMutableCharcateristic
+        let myChar1 = CBMutableCharacteristic(type: CBUUID(nsuuid: UUID()), properties: [.notify, .write, .read], value: nil, permissions: [.readable, .writeable])
+        let myChar2 = CBMutableCharacteristic(type: CBUUID(nsuuid: UUID()), properties: [.read], value: valueData, permissions: [.readable])
+        // 2. Create instance of CBMutableService
+        service = CBUUID(nsuuid: UUID())
+        let myService = CBMutableService(type: service, primary: true)
+        // 3. Add characteristics to the service
+        myService.characteristics = [myChar1, myChar2]
+        // 4. Add service to peripheralManager
+        peripheralManager.add(myService)
+        // 5. Start advertising
+        startAdvertising()
+    }
+    func startAdvertising() {
         
-        let manufacturerId: UInt16 = manufacturerData.prefix(2).withUnsafeBytes { pointer in
-            pointer.load(as: UInt16.self).bigEndian
-        }
+//        let bighEndianValue = manufacturerId.bigEndian
+//        let manufacturerIddata = withUnsafeBytes(of: bighEndianValue) { Data($0) }
         
-        if manufacturerId == self.manufacturerId {
-            if let mac = targetMac, peripheral.identifier.uuidString == mac {
-                processAdvertisementData(manufacturerData.suffix(from: 2))
-            } else {
-                attemptPairing(peripheral, manufacturerData: manufacturerData.suffix(from: 2))
-            }
-        }
+        let broadCastData =  [CBAdvertisementDataLocalNameKey: "OWSSendApp",
+                           CBAdvertisementDataServiceUUIDsKey: [service]] as [String : Any]//use a UUID Manufactirr cide id
+        
+        print(broadCastData)
+        peripheralManager.startAdvertising(broadCastData)
+        
     }
     
-    // MARK: - Pairing
-
-    private func attemptPairing(_ peripheral: CBPeripheral, manufacturerData: Data) {
-        if manufacturerData.starts(with: pairingPackage) {
-            statusMessage = "Got pairing package from: \(peripheral.identifier.uuidString)"
-            saveMacAddress(peripheral.identifier.uuidString)
-
-            // Initiate connection to the peripheral
-            centralManager?.connect(peripheral, options: nil)
-            
-            statusMessage = "Connecting to device: \(peripheral.identifier.uuidString)"
-            
-            // Stop the scan after initiating the connection
-            centralManager?.stopScan()
-            
-        } else {
-            statusMessage = "Other device found: \(peripheral.identifier.uuidString)"
-        }
-    }
-    
-    // MARK: - Data Processing
-
+//    func startScanning() {
+//        if let mac = loadMacAddress() {
+//            targetMac = mac
+//            statusMessage = "Start receiving from: \(mac)"
+//            centralManager?.scanForPeripherals(withServices: nil, options: [CBCentralManagerScanOptionAllowDuplicatesKey: true])
+//        } else {
+//            statusMessage = "No button was paired. Run pairing firstly."
+//            centralManager?.scanForPeripherals(withServices: nil, options: [CBCentralManagerScanOptionAllowDuplicatesKey: true])
+//        }
+//    }
+//    
+//    
+   
     private func processAdvertisementData(_ data: Data) {
         guard data.count >= 2 else { return }
         let packageIndex = Int(data[0])
@@ -142,6 +159,8 @@ class BluetoothManager: NSObject, ObservableObject, CBCentralManagerDelegate, CB
     }
 
     // MARK: - Utility Methods
+    
+    
 
     private func loadMacAddress() -> String? {
         return UserDefaults.standard.string(forKey: "targetMac")
