@@ -36,11 +36,6 @@ class BluetoothManager: NSObject, ObservableObject, CBPeripheralManagerDelegate 
         
     }
     
-    deinit {
-            // Close the file handle
-            
-            print("Bluetooth manager dellocoated")
-        }
         
     func peripheralManagerDidUpdateState(_ peripheral: CBPeripheralManager) { // we want to if the has granted permision or reviditrd irt
         
@@ -89,7 +84,7 @@ class BluetoothManager: NSObject, ObservableObject, CBPeripheralManagerDelegate 
         peripheralManager?.add(service)
         peripheralManager?.startAdvertising([
             CBAdvertisementDataServiceUUIDsKey: [serviceUUID],
-            CBAdvertisementDataLocalNameKey: "OWS-Sender"
+            CBAdvertisementDataLocalNameKey: "OWS-Sender-Name<With SomeData>", // This can be the same as how the manufacturer keyword is used to senbd data, in this case we send it via the name. There are restrictions on  how much data can be sent at  time. 
         ])
         
         print("broadcasting")
