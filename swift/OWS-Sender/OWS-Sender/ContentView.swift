@@ -28,9 +28,9 @@ struct ContentView: View {
             Spacer()
             
             Button(action: {
-                bluetoothManager.startbroadcasting()
+                bluetoothManager.startAdvertising()
             }) {
-                Text("Start Broadcasting")
+                Text("Broadcast")
                     .padding()
                     .background(Color.blue)
                     .foregroundColor(.white)
