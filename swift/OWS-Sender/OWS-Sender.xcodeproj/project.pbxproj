@@ -13,6 +13,7 @@
 		3F91A51E2C6980A500E16390 /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 3F91A51D2C6980A500E16390 /* Preview Assets.xcassets */; };
 		3F91A5252C6982F500E16390 /* BluetoothStatusView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3F91A5242C6982F500E16390 /* BluetoothStatusView.swift */; };
 		3F91A5272C69832500E16390 /* BluetoothManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3F91A5262C69832500E16390 /* BluetoothManager.swift */; };
+		9B175AD52C9F18790001709D /* BluetoothServiceConstant.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9B175AD42C9F182B0001709D /* BluetoothServiceConstant.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -24,6 +25,7 @@
 		3F91A5242C6982F500E16390 /* BluetoothStatusView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = BluetoothStatusView.swift; path = "OWS-Sender/Views/BluetoothStatusView.swift"; sourceTree = "<group>"; };
 		3F91A5262C69832500E16390 /* BluetoothManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = BluetoothManager.swift; path = "OWS-Sender/Models/BluetoothManager.swift"; sourceTree = "<group>"; };
 		3F91A5282C6985F000E16390 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
+		9B175AD42C9F182B0001709D /* BluetoothServiceConstant.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BluetoothServiceConstant.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -40,6 +42,7 @@
 		3F91A50A2C6980A200E16390 = {
 			isa = PBXGroup;
 			children = (
+				9B175AD42C9F182B0001709D /* BluetoothServiceConstant.swift */,
 				3F91A5242C6982F500E16390 /* BluetoothStatusView.swift */,
 				3F91A5262C69832500E16390 /* BluetoothManager.swift */,
 				3F91A5152C6980A200E16390 /* OWS-Sender */,
@@ -148,6 +151,7 @@
 				3F91A5252C6982F500E16390 /* BluetoothStatusView.swift in Sources */,
 				3F91A5192C6980A200E16390 /* ContentView.swift in Sources */,
 				3F91A5272C69832500E16390 /* BluetoothManager.swift in Sources */,
+				9B175AD52C9F18790001709D /* BluetoothServiceConstant.swift in Sources */,
 				3F91A5172C6980A200E16390 /* OWS_SenderApp.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

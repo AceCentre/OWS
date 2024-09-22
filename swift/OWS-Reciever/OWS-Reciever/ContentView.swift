@@ -7,6 +7,8 @@
 
 import SwiftUI
 
+let broadcasttimeout = 500.0
+
 struct ContentView: View {
     @ObservedObject var bluetoothManager = BluetoothManager()
 
@@ -29,27 +31,30 @@ struct ContentView: View {
                 Button(action: {
                     bluetoothManager.startScanning()
                 }) {
-                    Text("Start Scanning")
+                    Text("Scanning")
                         .padding()
                         .background(Color.blue)
-                        .foregroundColor(.white)
-                        .cornerRadius(10)
-                }
-                
-                Button(action: {
-                    bluetoothManager.startScanning() // Simplified for now, can be extended to differentiate actions
-                }) {
-                    Text("Pair")
-                        .padding()
-                        .background(Color.orange)
                         .foregroundColor(.white)
                         .cornerRadius(10)
                 }
             }
             
             Spacer()
+            
+            
         }
         .padding()
+        
+        Button(action: {
+            bluetoothManager.startScanning() // Simplified for now, can be extended to differentiate actions
+        }) {
+            Text("Sender Version: A")
+                .padding()
+                .background(Color.orange)
+                .foregroundColor(.white)
+                .cornerRadius(10)
+        }
+
     }
 }
 

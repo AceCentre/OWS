@@ -28,16 +28,26 @@ struct ContentView: View {
             Spacer()
             
             Button(action: {
-                bluetoothManager.startAdvertising()
+                bluetoothManager.advertiseData()
             }) {
-                Text("Broadcast")
+                Text("Send something")
                     .padding()
                     .background(Color.blue)
                     .foregroundColor(.white)
                     .cornerRadius(10)
             }
             
+            
             Spacer()
+            Button(action: {
+                bluetoothManager.startAdvertisingPairing()
+            }) {
+                Text("Broadcast Pairing")
+                    .padding()
+                    .background(Color.blue)
+                    .foregroundColor(.white)
+                    .cornerRadius(10)
+            }
         }
         .padding()
     }

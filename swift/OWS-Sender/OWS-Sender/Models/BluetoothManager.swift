@@ -9,29 +9,29 @@ import Foundation
 import CoreBluetooth
 import Combine
 
+
+
+
+struct SenderReceiverConstants
+{
+    let PairingServiceIdentifierUUIDKey: String = "45B73DF1-2099-481A-8877-2BBD95877880" 
+    //let PairingServiceIdentifierCBUUID: CBUUID = CBUUID(string:  "45B73DF1-2099-481A-8877-2BBD95877880")
+
+    let ParingServiceCDummyChacteristicUUIDKey: String = "FD80F91A-C0EB-4CD4-A89B-663408E69268" //dummy dummy service, if
+
+}
+
+
 class BluetoothManager: NSObject, ObservableObject, CBPeripheralManagerDelegate {
     
-    
-    
     private var peripheralManager : CBPeripheralManager!
-    
-    private let manufacturerId: UInt16 = 65535
-    private let pairingPackage: [UInt8] = [0x9c, 0x7c, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00]
-    private var targetMac: String?
-    
-    private var prevPackageIndex: Int = -1
-    private var replayBuffer: [(Int, [UInt8])] = []
-    
-    private let buttonsHidActions = ["1", "2", "3", "4"]
-    private let numberOfButtons = 4
-    private var buttonStates: [Int] = [0, 0, 0, 0]
-    
+
     @Published var statusMessage: String = ""
     @Published var receivedData: String = ""
 
     override init() {
         super.init()
-        self.peripheralManager = CBPeripheralManager(delegate: self, queue: nil) // Use the main thread
+        self.createPeripheral()
         print("Create bluetooth manager")
         
     }
@@ -43,57 +43,80 @@ class BluetoothManager: NSObject, ObservableObject, CBPeripheralManagerDelegate 
         switch peripheral.state {
         case .unknown:
             print("Bluetooth Device is UNKNOWN")
-            statusMessage = "Unknown BLE State"
+            statusMessage = "Unknown Bluetooth State"
         case .unsupported:
             print("Bluetooth Device is UNSUPPORTED")
-            statusMessage = "Unsupported"
+            statusMessage = "Unsupported, can not run Bluetooth"
         case .unauthorized:
             print("Bluetooth Device is UNAUTHORIZED")
-            statusMessage = "Unauthorised"
+            statusMessage = "Bluetooth Unauthorised, try change permissiopn in iPhone Setting"
         case .resetting:
             print("Bluetooth Device is RESETTING")
-            statusMessage = "Reseting"
+            statusMessage = "Bluetooth Reseting..."
         case .poweredOff:
             print("Bluetooth Device is POWERED OFF")
-            statusMessage = "Powered Off"
+            statusMessage = "Bluetooth Powered Off."
         case .poweredOn:
             print("Bluetooth Device is POWERED ON")
-            statusMessage = "On and Ready"
+            statusMessage = "On and Ready."
         @unknown default:
             print("Unknown State")
-            statusMessage = "BLE Unknown State"
+            statusMessage = "Unknown Bluetooth State"
         }
     }
-
     
-    func startAdvertising() {
-        // Define your service UUID and characteristics here
-        let serviceUUID = CBUUID(string: "45B73DF1-2099-481A-8877-2BBD95877880")
-        let characteristicUUID = CBUUID(string: "FD80F91A-C0EB-4CD4-A89B-663408E69268")
+
+    private func createPeripheral() {
+        self.peripheralManager = CBPeripheralManager(delegate: self, queue: nil) // Use the main thread
         
-        let characteristic = CBMutableCharacteristic(
-            type: characteristicUUID,
+        let pairingCharacteristic = CBMutableCharacteristic( // dummy
+            type: CBUUID(string: ParingServiceDummyChacteristicUUIDKey),
             properties: [.read, .write],
             value: nil,
             permissions: [.readable, .writeable]
         )
+        let pairingService = CBMutableService(type: CBUUID(string:  PairingServiceIdentifierUUIDKey) , primary: true)
+        pairingService.characteristics = [pairingCharacteristic]
+        peripheralManager?.add(pairingService)
         
-        let service = CBMutableService(type: serviceUUID, primary: true)
-        service.characteristics = [characteristic]
+        let dataServiceCharacteristic = CBMutableCharacteristic(
+            type: CBUUID(string: DataServiceAppleDummyChacteristicUUIDKey),
+            properties: [.read, .write],
+            value: nil,
+            permissions: [.readable, .writeable]
+        )
+        let dataService = CBMutableService(type: CBUUID(string:  PairingServiceIdentifierUUIDKey) , primary: true)
+        dataService.characteristics = [dataServiceCharacteristic]
         
-        peripheralManager?.add(service)
+    }
+
+    
+    func startAdvertisingPairing() {
+        // Define your service UUID and characteristics here
+
         peripheralManager?.startAdvertising([
-            CBAdvertisementDataServiceUUIDsKey: [serviceUUID],
-            CBAdvertisementDataLocalNameKey: "OWS-Sender-Name<With SomeData>", // This can be the same as how the manufacturer keyword is used to senbd data, in this case we send it via the name. There are restrictions on  how much data can be sent at  time. 
+            CBAdvertisementDataServiceUUIDsKey: [PairingServiceIdentifierUUIDKey],
+            CBAdvertisementDataLocalNameKey: "OWS Switch Name"])  // This can be the same as how the manufacturer keyword is used to senbd data, in this case we send it via the name. There are restrictions on  how much data can be sent at  time.
+        
+        print("Broadcast pairing")
+    }
+    
+    func advertiseData() {
+        // Define your service UUID and characteristics here
+
+        let datetimeData = DateFormatter.localizedString(from: Date(), dateStyle: .medium, timeStyle: .medium)// Data Example broadcast the dste and time
+        peripheralManager?.startAdvertising([
+            CBAdvertisementDataServiceUUIDsKey: [DataserviceAppleUUIDKey],
+            CBAdvertisementDataLocalNameKey: "Sender:\(datetimeData)", // This can be the same as how the manufacturer keyword is used to senbd data, in this case we send it via the name. There are restrictions on  how much data can be sent at  time.
         ])
         
-        print("broadcasting")
+        print("broadcasting data i.e. \(datetimeData)")
     }
     
     // Implement other CBPeripheralManagerDelegate methods as needed
     func peripheralManager(_ peripheral: CBPeripheralManager, didReceiveRead request: CBATTRequest) {
         // Handle read request
-        print("Someone is telling us to read something")
+        print("Someone is telling us to read something") //we won;t njeoing /
     }
 
     func peripheralManager(_ peripheral: CBPeripheralManager, didReceiveWrite requests: [CBATTRequest]) {
@@ -110,7 +133,4 @@ class BluetoothManager: NSObject, ObservableObject, CBPeripheralManagerDelegate 
         // Handle unsubscription from characteristic
         print("Someone is no longer listening")
     }
-
-
-
 }
