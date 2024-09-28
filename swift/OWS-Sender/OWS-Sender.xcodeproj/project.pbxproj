@@ -42,7 +42,7 @@
 		3F91A50A2C6980A200E16390 = {
 			isa = PBXGroup;
 			children = (
-				9B175AD42C9F182B0001709D /* BluetoothServiceConstant.swift */,
+				9B5E4CAD2CA2C58A00D1C099 /* Shared */,
 				3F91A5242C6982F500E16390 /* BluetoothStatusView.swift */,
 				3F91A5262C69832500E16390 /* BluetoothManager.swift */,
 				3F91A5152C6980A200E16390 /* OWS-Sender */,
@@ -77,6 +77,15 @@
 			);
 			path = "Preview Content";
 			sourceTree = "<group>";
+		};
+		9B5E4CAD2CA2C58A00D1C099 /* Shared */ = {
+			isa = PBXGroup;
+			children = (
+				9B175AD42C9F182B0001709D /* BluetoothServiceConstant.swift */,
+			);
+			name = Shared;
+			path = ../Shared;
+			sourceTree = SOURCE_ROOT;
 		};
 /* End PBXGroup section */
 

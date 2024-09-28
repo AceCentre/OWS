@@ -11,23 +11,12 @@ import Combine
 
 
 
-
-struct SenderReceiverConstants
-{
-    let PairingServiceIdentifierUUIDKey: String = "45B73DF1-2099-481A-8877-2BBD95877880" 
-    //let PairingServiceIdentifierCBUUID: CBUUID = CBUUID(string:  "45B73DF1-2099-481A-8877-2BBD95877880")
-
-    let ParingServiceCDummyChacteristicUUIDKey: String = "FD80F91A-C0EB-4CD4-A89B-663408E69268" //dummy dummy service, if
-
-}
-
-
 class BluetoothManager: NSObject, ObservableObject, CBPeripheralManagerDelegate {
     
     private var peripheralManager : CBPeripheralManager!
 
     @Published var statusMessage: String = ""
-    @Published var receivedData: String = ""
+    @Published var sentData: String = ""
 
     override init() {
         super.init()
@@ -94,11 +83,13 @@ class BluetoothManager: NSObject, ObservableObject, CBPeripheralManagerDelegate 
     func startAdvertisingPairing() {
         // Define your service UUID and characteristics here
 
+        let pairingPackageData = NSData(bytes: pairingPackage, length: pairingPackage.count)
         peripheralManager?.startAdvertising([
-            CBAdvertisementDataServiceUUIDsKey: [PairingServiceIdentifierUUIDKey],
-            CBAdvertisementDataLocalNameKey: "OWS Switch Name"])  // This can be the same as how the manufacturer keyword is used to senbd data, in this case we send it via the name. There are restrictions on  how much data can be sent at  time.
+            CBAdvertisementDataServiceUUIDsKey: [CBUUID(string: PairingServiceIdentifierUUIDKey)],
+            CBAdvertisementDataLocalNameKey: pairingPackageData])  // This can be the same as how the manufacturer keyword is used to senbd data, in this case we send it via the name. There are restrictions on  how much data can be sent at  time.
         
-        print("Broadcast pairing")
+        self.statusMessage = "Broadcasting pairing"
+        self.sentData = "\nPairingPackage detail: [\(pairingPackage.map { String(format: "0x%02x", $0) }.joined(separator: ", "))]:"
     }
     
     func advertiseData() {
@@ -106,17 +97,18 @@ class BluetoothManager: NSObject, ObservableObject, CBPeripheralManagerDelegate 
 
         let datetimeData = DateFormatter.localizedString(from: Date(), dateStyle: .medium, timeStyle: .medium)// Data Example broadcast the dste and time
         peripheralManager?.startAdvertising([
-            CBAdvertisementDataServiceUUIDsKey: [DataserviceAppleUUIDKey],
-            CBAdvertisementDataLocalNameKey: "Sender:\(datetimeData)", // This can be the same as how the manufacturer keyword is used to senbd data, in this case we send it via the name. There are restrictions on  how much data can be sent at  time.
+            CBAdvertisementDataServiceUUIDsKey: [CBUUID(string: DataserviceAppleUUIDKey), CBUUID(string: DataserviceAdrinoUUIDKey)],
+           // CBAdvertisementDataIsConnectable : NSNumber(booleanLiteral: false),
+            CBAdvertisementDataLocalNameKey: "\(datetimeData)", // This can be the same as how the manufacturer keyword is used to sent data, in this case we send it via the name. There are restrictions on  how much data can be sent at  time.
         ])
-        
-        print("broadcasting data i.e. \(datetimeData)")
+        self.statusMessage = "Sending the time."
+        self.sentData = "\(datetimeData)"
     }
     
     // Implement other CBPeripheralManagerDelegate methods as needed
     func peripheralManager(_ peripheral: CBPeripheralManager, didReceiveRead request: CBATTRequest) {
         // Handle read request
-        print("Someone is telling us to read something") //we won;t njeoing /
+        print("Someone is telling us to read something") //we ignore
     }
 
     func peripheralManager(_ peripheral: CBPeripheralManager, didReceiveWrite requests: [CBATTRequest]) {
@@ -132,5 +124,12 @@ class BluetoothManager: NSObject, ObservableObject, CBPeripheralManagerDelegate 
     func peripheralManager(_ peripheral: CBPeripheralManager, central: CBCentral, didUnsubscribeFrom characteristic: CBCharacteristic) {
         // Handle unsubscription from characteristic
         print("Someone is no longer listening")
+    }
+    
+    func peripheralManagerDidStartAdvertising(_ peripheral: CBPeripheralManager, error: (any Error)?) {
+        if let error = error {
+            self.statusMessage = "Could not broadcast: \(error.localizedDescription)"
+        }
+        
     }
 }

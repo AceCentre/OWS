@@ -20,7 +20,7 @@ struct ContentView: View {
             
             Spacer()
             
-            Text(bluetoothManager.receivedData)
+            Text(bluetoothManager.sentData)
                 .padding()
                 .foregroundColor(.green)
                 .font(.body)
