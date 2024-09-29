@@ -20,7 +20,7 @@ struct ContentView: View {
             
             Spacer()
             
-            Text(bluetoothManager.receivedData)
+            Text(bluetoothManager.sentData)
                 .padding()
                 .foregroundColor(.green)
                 .font(.body)
@@ -28,16 +28,26 @@ struct ContentView: View {
             Spacer()
             
             Button(action: {
-                bluetoothManager.startScanning()
+                bluetoothManager.advertiseData()
             }) {
-                Text("Start Scanning")
+                Text("Send something")
                     .padding()
                     .background(Color.blue)
                     .foregroundColor(.white)
                     .cornerRadius(10)
             }
             
+            
             Spacer()
+            Button(action: {
+                bluetoothManager.startAdvertisingPairing()
+            }) {
+                Text("Broadcast Pairing")
+                    .padding()
+                    .background(Color.blue)
+                    .foregroundColor(.white)
+                    .cornerRadius(10)
+            }
         }
         .padding()
     }
