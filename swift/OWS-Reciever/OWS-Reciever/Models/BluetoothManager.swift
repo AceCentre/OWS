@@ -122,7 +122,7 @@ class BluetoothManager: NSObject, ObservableObject, CBCentralManagerDelegate, CB
                 self.processAdvertisementData(messageData)
             }
         } else { // otherwise because we not paired, hopefull this will be a pairing messaage
-            self.attemptPairing(peripheral, manufacturerData: messageData as! NSData)
+            self.attemptPairing(peripheral, manufacturerData: messageData as NSData)
         }
     }
     
