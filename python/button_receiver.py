@@ -4,6 +4,7 @@ import time
 
 import asyncio
 from bleak import BleakScanner
+from bleak.backends.scanner import AdvertisementData
 
 from pynput.keyboard import Key, Controller
 
@@ -18,6 +19,14 @@ button_filepath = pathlib.Path(__file__).parent.resolve() / "button_mac"
 target_mac = None
 
 prev_package_i = -1
+
+# Add Target UUIDs for filtering
+TARGET_UUIDS = [
+    "14B53A88-4A9C-46C9-B251-98F7DF0971D7",  # Pairing Service UUID
+    "45B73DF1-2099-481A-8877-2BBD95877880",  # Data Service (Apple)
+    "E765151E-EE25-418D-BDF2-F2F5B1BE1220"   # Data Service (Arduino)
+]
+
 
 pairing_package = b'\x9c|\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
 
@@ -48,91 +57,71 @@ def save_mac(mac):
         target_mac = f.write(mac)
 
 async def replay():
-    global replay_buffer, keyboard_state
-
-    print("start replay function. Interval:", replay_interval)
     while True:
         replay_i, replay_values, current = await replay_buffer.get()
-        print("replay pack: {} - {}; curr: {}".format(replay_i, replay_values, current))
-        
-        for i in range(package_size):
-            for j in range(n_buttons):
-                received_state = replay_values[j] & 1
+        if replay_i is None:  # Exit signal
+            break
 
-                if keyboard_repeat:
-                    if received_state == 1:
-                        if button_states[j] == 0 or button_states[j] > 20:
-                            await asyncio.to_thread(keyboard.press, buttons_hid_actions[j])
+        for j in range(n_buttons):
+            state = replay_values[j] & 1
+            if state == 1 and button_states[j] == 0:
+                await asyncio.to_thread(keyboard.press, buttons_hid_actions[j])
+                button_states[j] = 1
+            elif state == 0:
+                await asyncio.to_thread(keyboard.release, buttons_hid_actions[j])
+                button_states[j] = 0
 
-                        button_states[j] += 1
-                    else:
-                        button_states[j] = 0
-                else:
-                    if button_states[j] == 0 and received_state == 1:
-                        await asyncio.to_thread(keyboard.press, buttons_hid_actions[j])
-                    button_states[j] = received_state
-                
-                replay_values[j] = replay_values[j] >> 1
-            
-            if current:
-                await asyncio.sleep(replay_interval)
-
-def receive_button_data(device, advertising_data):
+def receive_button_data(device, advertisement_data):
     global replay_buffer, prev_package_i
 
-    #print("{:.3f} | MAC: {} | Adv: {}".format(time.time(), device.address, advertising_data))
+    # Ensure the device matches the expected MAC and advertises the target UUID
+    if device.address != target_mac or TARGET_UUIDS[1] not in (advertisement_data.service_uuids or []):
+        return
+    
+    if MANUFACTURER_ID not in advertisement_data.manufacturer_data:
+        print("No valid manufacturer data from:", device.address)
+        return
 
-    if device.address == target_mac:
-        package_i = advertising_data.manufacturer_data[MANUFACTURER_ID][0]
+    data = advertisement_data.manufacturer_data[MANUFACTURER_ID]
+    package_i = data[0]
+    
+    if prev_package_i == package_i:
+        return  # Skip duplicate packages
 
-        if prev_package_i != package_i:
-            print("Adv package: {}".format(advertising_data))
-            print("received index", package_i)
-            
-            adv_package = advertising_data.manufacturer_data[MANUFACTURER_ID][1::]
-            
-            package_diff = package_i - prev_package_i
-            if package_diff < 0:
-                package_diff += 256
-            if package_diff > 4:
-                package_diff = 4
-            i = package_diff - 1
-            print("package_diff: ", package_diff)
+    adv_package = data[1:]
+    if len(adv_package) < n_buttons * package_size:
+        print("Invalid data length:", len(adv_package))
+        return
 
-            current = False
+    package_diff = (package_i - prev_package_i + 256) % 256
+    for i in range(min(package_diff, 4)):
+        replay_buffer.put_nowait((package_i - i, adv_package[i * n_buttons:(i + 1) * n_buttons], i == 0))
+    
+    prev_package_i = package_i
 
-            while i >= 0:
-                if i == 0:
-                    current = True
-                replay_pack = []
-                for j in range(n_buttons):
-                    replay_pack.append(adv_package[i*4+j])
-                
-                print("put package {}:{}; curr:{}".format((package_i-i), replay_pack, current))    
-                replay_buffer.put_nowait(((package_i-i), replay_pack, current))
-
-                i-=1
-            
-            prev_package_i = package_i
-
-def pair(device, advertising_data):
+def pair(device, advertisement_data):
     dev_mac = device.address
-    adv_package = advertising_data.manufacturer_data.get(MANUFACTURER_ID)
-    #print(adv_package)
-    if adv_package != None and len(adv_package) == 18:
-        if pairing_package == adv_package:
-            print("Got pairing package from: {}".format(dev_mac))
-            save_mac(dev_mac)
-            
-            scan_stop_event.set()
+    adv_package = advertisement_data.manufacturer_data.get(MANUFACTURER_ID)
+    
+    # Check if UUID matches the pairing service
+    if TARGET_UUIDS[0] not in (advertisement_data.service_uuids or []):  # Pairing UUID
+        print(f"Unrecognized device: {dev_mac}")
+        return
+    
+    if adv_package is None or len(adv_package) != len(pairing_package):
+        print(f"Device does not match pairing package: {dev_mac}")
+        return
+    
+    if pairing_package == adv_package:
+        print("Pairing successful with:", dev_mac)
+        save_mac(dev_mac)
+        scan_stop_event.set()
     else:
-        print("other device:", dev_mac)
+        print("Device does not match pairing package:", dev_mac)
 
 async def scan(callback_fun):
     async with BleakScanner(callback_fun, scanning_mode="active") as scanner:
-
         await scan_stop_event.wait()
-
 
 async def main():
     n_args = len(sys.argv)
