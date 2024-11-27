@@ -13,6 +13,7 @@
 		3F91A53D2C6986AB00E16390 /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 3F91A53C2C6986AB00E16390 /* Preview Assets.xcassets */; };
 		3F91A5442C69884300E16390 /* BluetoothManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3F91A5432C69884300E16390 /* BluetoothManager.swift */; };
 		3F91A5462C69888000E16390 /* BluetoothStatusView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3F91A5452C69888000E16390 /* BluetoothStatusView.swift */; };
+		9B5E4CB02CA2C5C700D1C099 /* BluetoothServiceConstant.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9B5E4CAE2CA2C5C700D1C099 /* BluetoothServiceConstant.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -23,6 +24,8 @@
 		3F91A53C2C6986AB00E16390 /* Preview Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = "Preview Assets.xcassets"; sourceTree = "<group>"; };
 		3F91A5432C69884300E16390 /* BluetoothManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = BluetoothManager.swift; path = Models/BluetoothManager.swift; sourceTree = "<group>"; };
 		3F91A5452C69888000E16390 /* BluetoothStatusView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = BluetoothStatusView.swift; path = Views/BluetoothStatusView.swift; sourceTree = "<group>"; };
+		9B1E2FF72C81B740009B65D8 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		9B5E4CAE2CA2C5C700D1C099 /* BluetoothServiceConstant.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BluetoothServiceConstant.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -55,6 +58,8 @@
 		3F91A5342C6986A900E16390 /* OWS-Reciever */ = {
 			isa = PBXGroup;
 			children = (
+				9B5E4CAF2CA2C5C700D1C099 /* Shared */,
+				9B1E2FF72C81B740009B65D8 /* Info.plist */,
 				3F91A5352C6986A900E16390 /* OWS_RecieverApp.swift */,
 				3F91A5372C6986A900E16390 /* ContentView.swift */,
 				3F91A5432C69884300E16390 /* BluetoothManager.swift */,
@@ -72,6 +77,15 @@
 			);
 			path = "Preview Content";
 			sourceTree = "<group>";
+		};
+		9B5E4CAF2CA2C5C700D1C099 /* Shared */ = {
+			isa = PBXGroup;
+			children = (
+				9B5E4CAE2CA2C5C700D1C099 /* BluetoothServiceConstant.swift */,
+			);
+			name = Shared;
+			path = ../Shared;
+			sourceTree = SOURCE_ROOT;
 		};
 /* End PBXGroup section */
 
@@ -146,6 +160,7 @@
 				3F91A5382C6986A900E16390 /* ContentView.swift in Sources */,
 				3F91A5462C69888000E16390 /* BluetoothStatusView.swift in Sources */,
 				3F91A5442C69884300E16390 /* BluetoothManager.swift in Sources */,
+				9B5E4CB02CA2C5C700D1C099 /* BluetoothServiceConstant.swift in Sources */,
 				3F91A5362C6986A900E16390 /* OWS_RecieverApp.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -283,6 +298,7 @@
 				DEVELOPMENT_TEAM = K45HHA96ND;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = "OWS-Reciever/Info.plist";
 				INFOPLIST_KEY_NSBluetoothAlwaysUsageDescription = "";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
@@ -313,6 +329,7 @@
 				DEVELOPMENT_TEAM = K45HHA96ND;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = "OWS-Reciever/Info.plist";
 				INFOPLIST_KEY_NSBluetoothAlwaysUsageDescription = "";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
